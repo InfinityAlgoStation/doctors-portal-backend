@@ -2,6 +2,7 @@ import cors from 'cors';
 import express, { Application, NextFunction, Request, Response } from 'express';
 import httpStatus from 'http-status';
 import globalErrorHandler from './app/middlewares/globalErrorHandler';
+import routers from './app/routes';
 // import routes from './app/routes/index';
 
 const app: Application = express();
@@ -14,11 +15,11 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
 // routes
-// app.use('/api/v1/', routes);
+app.use('/api/v1/', routers);
 
 // testing
 app.get('/', async (req: Request, res: Response) => {
-  res.send('Server is running ok 2');
+  res.send('Server is running');
 });
 
 // global error handler middleware
