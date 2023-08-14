@@ -37,7 +37,50 @@ const getAllDoctors = catchAsync(async (req: Request, res: Response) => {
   });
 });
 
+const getSingleDoctor = catchAsync(async (req: Request, res: Response) => {
+  const id = req.params.id;
+
+  const result = await DoctorsService.getSingleDoctor(id);
+
+  sendResponse<IDoctor>(res, {
+    statusCode: httpStatus.OK,
+    success: true,
+    message: 'User retrieved successfully !',
+    data: result,
+  });
+});
+
+const updateUser = catchAsync(async (req: Request, res: Response) => {
+  const id = req.params.id;
+  const updatedData = req.body;
+
+  const result = await DoctorsService.updateDoctor(id, updatedData);
+
+  sendResponse<IDoctor>(res, {
+    statusCode: httpStatus.OK,
+    success: true,
+    message: 'User updated successfully !',
+    data: result,
+  });
+});
+
+const deleteDoctor = catchAsync(async (req: Request, res: Response) => {
+  const id = req.params.id;
+
+  const result = await DoctorsService.deleteDoctor(id);
+
+  sendResponse<IDoctor>(res, {
+    statusCode: httpStatus.OK,
+    success: true,
+    message: 'user deleted successfully !',
+    data: result,
+  });
+});
+
 export const DoctorsController = {
   createDoctor,
   getAllDoctors,
+  getSingleDoctor,
+  updateUser,
+  deleteDoctor,
 };

@@ -1,4 +1,6 @@
-import { SortOrder } from 'mongoose';
+import httpStatus from 'http-status';
+import { SortOrder, Types } from 'mongoose';
+import ApiError from '../../../errors/ApiErrors';
 import { paginationHelpers } from '../../../helpers/paginationHelpers';
 import { IGenericResponse } from '../../../interfaces/common';
 import IPaginationOptions from '../../../interfaces/paginations';
@@ -69,7 +71,47 @@ const getAllDoctors = async (
   };
 };
 
+const getSingleDoctor = async (id: string): Promise<IDoctor | null> => {
+  const result = await Doctor.findById(id);
+  return result;
+};
+
+const updateDoctor = async (
+  id: string,
+  payload: Partial<IDoctor>
+): Promise<IDoctor | null> => {
+  const isExist = await Doctor.findOne({ _id: id });
+
+  if (!isExist) {
+    throw new ApiError(httpStatus.NOT_FOUND, 'Doctor not found !');
+  }
+
+  const { name, ...doctorData } = payload;
+
+  const updatedUserData: Partial<IDoctor> = { ...doctorData };
+
+  // dynamically handling
+  if (name && Object.keys(name).length > 0) {
+    Object.keys(name).forEach(key => {
+      const nameKey = `name.${key}` as keyof Partial<IDoctor>; // `name.fisrtName`
+      (updatedUserData as any)[nameKey] = name[key as keyof typeof name];
+    });
+  }
+  const objectId = new Types.ObjectId(id); // Convert string to ObjectId
+  const result = await Doctor.findOneAndUpdate(objectId, updatedUserData, {
+    new: true,
+  });
+  return result;
+};
+const deleteDoctor = async (id: string): Promise<IDoctor | null> => {
+  const result = await Doctor.findByIdAndDelete(id);
+  return result;
+};
+
 export const DoctorsService = {
   createDoctor,
   getAllDoctors,
+  getSingleDoctor,
+  updateDoctor,
+  deleteDoctor,
 };

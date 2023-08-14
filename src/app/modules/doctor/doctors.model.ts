@@ -22,10 +22,12 @@ const doctorSchema = new Schema<IDoctor, DoctorModel>(
     },
     age: {
       type: Number,
+      required: true,
     },
     email: {
       type: String,
       required: true,
+      unique: true,
     },
     password: {
       type: String,
@@ -34,6 +36,7 @@ const doctorSchema = new Schema<IDoctor, DoctorModel>(
     phoneNumber: {
       type: Number,
       required: true,
+      unique: true,
     },
     location: {
       type: String,
