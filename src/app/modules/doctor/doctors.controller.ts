@@ -50,7 +50,7 @@ const getSingleDoctor = catchAsync(async (req: Request, res: Response) => {
   });
 });
 
-const updateUser = catchAsync(async (req: Request, res: Response) => {
+const updateDoctor = catchAsync(async (req: Request, res: Response) => {
   const id = req.params.id;
   const updatedData = req.body;
 
@@ -81,6 +81,6 @@ export const DoctorsController = {
   createDoctor,
   getAllDoctors,
   getSingleDoctor,
-  updateUser,
+  updateDoctor,
   deleteDoctor,
 };

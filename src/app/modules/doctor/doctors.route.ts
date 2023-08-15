@@ -9,11 +9,11 @@ router.get('/:id', DoctorsController.getSingleDoctor);
 router.patch(
   '/:id',
   validateRequest(DoctorValidation.doctorValidationUpdateZodSchema),
-  DoctorsController.updateUser
+  DoctorsController.updateDoctor
 );
 router.delete('/:id', DoctorsController.deleteDoctor);
 router.post(
-  '/create-doctor',
+  '/',
   validateRequest(DoctorValidation.doctorValidationCreateZodSchema),
   DoctorsController.createDoctor
 );
