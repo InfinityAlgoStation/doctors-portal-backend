@@ -33,10 +33,6 @@ const adminSchema = new Schema<IAdmin, AdminModel>(
         type: String,
       },
     },
-    address: {
-      type: String,
-      required: true,
-    },
   },
   {
     timestamps: true,

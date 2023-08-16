@@ -11,7 +11,6 @@ export type IAdmin = {
   email: string;
   password: string;
   name: AdminName;
-  address: string;
 };
 
 export type AdminModel = Model<IAdmin, Record<string, unknown>>;

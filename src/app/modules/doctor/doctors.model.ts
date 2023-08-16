@@ -16,14 +16,6 @@ const doctorSchema = new Schema<IDoctor, DoctorModel>(
         type: String,
       },
     },
-    id: {
-      type: Number,
-      required: true,
-    },
-    age: {
-      type: Number,
-      required: true,
-    },
     email: {
       type: String,
       required: true,
@@ -49,28 +41,35 @@ const doctorSchema = new Schema<IDoctor, DoctorModel>(
         'Comilla',
         'Rangpur',
         'Mymensingh',
+        null,
       ],
-      required: true,
+      default: null,
+    },
+    gender: {
+      type: String,
+      enum: ['male', 'female', null],
+      default: null,
+    },
+    bloodGroup: {
+      type: String,
+      enum: ['A+', 'A-', 'B+', 'B-', 'AB+', 'AB-', 'O+', 'O-', null],
+      default: null,
     },
     verifiedLicense: {
       type: Boolean,
-      default: false,
-      required: true,
+      default: null,
     },
     chamber: {
       type: String,
-      required: true,
+      default: null,
     },
-    expertise: [
-      {
-        type: String,
-        required: true,
-      },
-    ],
-
+    expertise: {
+      type: [String], // Assuming you're using an array for expertise
+      default: null,
+    },
     appointmentFee: {
       type: Number,
-      required: true,
+      default: null,
     },
   },
   {

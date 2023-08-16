@@ -11,6 +11,8 @@ export type IPatient = {
   email: string;
   password: string;
   name: PatientName;
+  gender: 'male' | 'female' | null;
+  bloodGroup?: 'A+' | 'A-' | 'B+' | 'B-' | 'AB+' | 'AB-' | 'O+' | 'O-' | null;
 };
 
 export type PatientModel = Model<IPatient, Record<string, unknown>>;

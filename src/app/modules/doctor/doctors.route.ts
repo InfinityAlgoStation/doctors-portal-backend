@@ -12,11 +12,11 @@ router.patch(
   DoctorsController.updateDoctor
 );
 router.delete('/:id', DoctorsController.deleteDoctor);
-router.post(
-  '/',
-  validateRequest(DoctorValidation.doctorValidationCreateZodSchema),
-  DoctorsController.createDoctor
-);
+// router.post(
+//   '/',
+//   validateRequest(DoctorValidation.doctorValidationCreateZodSchema),
+//   DoctorsController.createDoctor
+// );
 router.get('/', DoctorsController.getAllDoctors);
 
 export const DoctorsRoutes = router;

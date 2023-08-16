@@ -12,11 +12,11 @@ router.patch(
   AdminsController.updateAdmin
 );
 router.delete('/:id', AdminsController.deleteAdmin);
-router.post(
-  '/',
-  validateRequest(AdminsValidation.adminValidationCreateZodSchema),
-  AdminsController.createAdmin
-);
+// router.post(
+//   '/',
+//   validateRequest(AdminsValidation.adminValidationCreateZodSchema),
+//   AdminsController.createAdmin
+// );
 router.get('/', AdminsController.getAllAdmin);
 
 export const AdminsRoutes = router;

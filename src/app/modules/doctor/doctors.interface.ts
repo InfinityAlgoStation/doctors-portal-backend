@@ -6,10 +6,9 @@ export type UserName = {
 };
 
 export type IDoctor = {
-  _id: string;
-  id: number;
+  id: string;
   name: UserName;
-  age?: number;
+  age: number | null;
   email: string;
   password: string;
   phoneNumber: number;
@@ -21,11 +20,14 @@ export type IDoctor = {
     | 'Sylhet'
     | 'Comilla'
     | 'Rangpur'
-    | 'Mymensingh';
-  verifiedLicense: boolean;
-  chamber: string;
-  expertise: string;
-  appointmentFee: number;
+    | 'Mymensingh'
+    | null;
+  verifiedLicense: boolean | null;
+  gender: 'male' | 'female' | null;
+  bloodGroup?: 'A+' | 'A-' | 'B+' | 'B-' | 'AB+' | 'AB-' | 'O+' | 'O-' | null;
+  chamber: string | null;
+  expertise: string[] | null;
+  appointmentFee: number | null;
   //todo   appointments: Appointment[];
   //todo   clinics: Clinic[];
   //todo   Other doctor-specific properties

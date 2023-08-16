@@ -10,7 +10,6 @@ const adminValidationCreateZodSchema = z.object({
       lastName: z.string().min(2),
       middleName: z.string().optional(),
     }),
-    address: z.string(),
   }),
 });
 
@@ -27,7 +26,6 @@ export const adminValidationUpdateZodSchema = z.object({
           middleName: z.string().optional(),
         })
         .optional(),
-      address: z.string().optional(),
     })
     .optional(),
 });

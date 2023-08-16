@@ -33,6 +33,16 @@ const patientSchema = new Schema<IPatient, PatientModel>(
         type: String,
       },
     },
+    gender: {
+      type: String,
+      enum: ['male', 'female'],
+      default: null,
+    },
+    bloodGroup: {
+      type: String,
+      enum: ['A+', 'A-', 'B+', 'B-', 'AB+', 'AB-', 'O+', 'O-'],
+      default: null,
+    },
   },
   {
     timestamps: true,
