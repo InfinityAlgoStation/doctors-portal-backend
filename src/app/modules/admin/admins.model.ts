@@ -15,11 +15,6 @@ const adminSchema = new Schema<IAdmin, AdminModel>(
       required: true,
       unique: true,
     },
-    password: {
-      type: String,
-      required: true,
-      select: 0,
-    },
     name: {
       firstName: {
         type: String,

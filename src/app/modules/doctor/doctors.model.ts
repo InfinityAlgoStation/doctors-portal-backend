@@ -21,10 +21,6 @@ const doctorSchema = new Schema<IDoctor, DoctorModel>(
       required: true,
       unique: true,
     },
-    password: {
-      type: String,
-      required: true,
-    },
     phoneNumber: {
       type: Number,
       required: true,

@@ -9,7 +9,6 @@ export type IPatient = {
   id: string;
   phoneNumber: number;
   email: string;
-  password: string;
   name: PatientName;
   gender: 'male' | 'female' | null;
   bloodGroup?: 'A+' | 'A-' | 'B+' | 'B-' | 'AB+' | 'AB-' | 'O+' | 'O-' | null;

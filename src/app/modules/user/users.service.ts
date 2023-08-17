@@ -30,7 +30,8 @@ const createAdmin = async (
   const session = await mongoose.startSession();
   try {
     session.startTransaction();
-
+    //set user email
+    admin.email = user.email;
     const newAdmin = await Admin.create([admin], { session });
 
     if (!newAdmin.length) {
@@ -74,7 +75,8 @@ const createDoctor = async (
   const session = await mongoose.startSession();
   try {
     session.startTransaction();
-
+    //set user email
+    doctor.email = user.email;
     const newDoctor = await Doctor.create([doctor], { session });
     if (!newDoctor.length) {
       throw new ApiError(httpStatus.BAD_REQUEST, 'failed to create doctor');
@@ -112,7 +114,8 @@ const createPatient = async (
   const session = await mongoose.startSession();
   try {
     session.startTransaction();
-
+    // set user email
+    patient.email = user.email;
     const newPatient = await Patient.create([patient], { session });
 
     if (!newPatient.length) {

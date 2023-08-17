@@ -15,11 +15,6 @@ const patientSchema = new Schema<IPatient, PatientModel>(
       required: true,
       unique: true,
     },
-    password: {
-      type: String,
-      required: true,
-      select: 0,
-    },
     name: {
       firstName: {
         type: String,
@@ -35,12 +30,12 @@ const patientSchema = new Schema<IPatient, PatientModel>(
     },
     gender: {
       type: String,
-      enum: ['male', 'female'],
+      enum: ['male', 'female', null],
       default: null,
     },
     bloodGroup: {
       type: String,
-      enum: ['A+', 'A-', 'B+', 'B-', 'AB+', 'AB-', 'O+', 'O-'],
+      enum: ['A+', 'A-', 'B+', 'B-', 'AB+', 'AB-', 'O+', 'O-', null],
       default: null,
     },
   },

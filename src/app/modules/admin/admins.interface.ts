@@ -9,7 +9,6 @@ export type IAdmin = {
   id: string;
   phoneNumber: number;
   email: string;
-  password: string;
   name: AdminName;
 };
 

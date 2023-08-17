@@ -9,8 +9,6 @@ const doctorValidationCreateZodSchema = z.object({
     }),
     id: z.number().optional(),
     age: z.number().optional(),
-    email: z.string().email(),
-    password: z.string().min(6),
     phoneNumber: z.number(),
     location: z
       .enum([
@@ -42,8 +40,6 @@ const doctorValidationUpdateZodSchema = z.object({
       .optional(),
     id: z.number().optional(),
     age: z.number().optional(),
-    email: z.string().email().optional(),
-    password: z.string().min(6).optional(),
     phoneNumber: z.number().optional(),
     location: z
       .enum([

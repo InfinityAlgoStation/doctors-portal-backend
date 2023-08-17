@@ -10,7 +10,6 @@ export type IDoctor = {
   name: UserName;
   age: number | null;
   email: string;
-  password: string;
   phoneNumber: number;
   location:
     | 'Dhaka'
