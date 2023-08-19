@@ -7,7 +7,7 @@ export type PatientName = {
 };
 export type IPatient = {
   id: string;
-  phoneNumber: number;
+  phoneNumber: string;
   email: string;
   name: PatientName;
   gender: 'male' | 'female' | null;

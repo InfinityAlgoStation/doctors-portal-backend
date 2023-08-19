@@ -7,7 +7,7 @@ export type AdminName = {
 };
 export type IAdmin = {
   id: string;
-  phoneNumber: number;
+  phoneNumber: string;
   email: string;
   name: AdminName;
 };

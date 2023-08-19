@@ -4,6 +4,7 @@ import ApiError from '../../../errors/ApiErrors';
 import { paginationHelpers } from '../../../helpers/paginationHelpers';
 import { IGenericResponse } from '../../../interfaces/common';
 import IPaginationOptions from '../../../interfaces/paginations';
+import { User } from '../user/users.model';
 import { doctorSearchableFields } from './doctors.constant';
 import { IDoctor, IDoctorFilters } from './doctors.interface';
 import { Doctor } from './doctors.model';
@@ -103,9 +104,20 @@ const updateDoctor = async (
   });
   return result;
 };
-const deleteDoctor = async (id: string): Promise<IDoctor | null> => {
-  const result = await Doctor.findByIdAndDelete(id);
-  return result;
+
+const deleteDoctor = async (email: string): Promise<IDoctor | null> => {
+  const doctor = await Doctor.findOneAndDelete({ email });
+
+  if (!doctor) {
+    throw new ApiError(httpStatus.NOT_FOUND, 'Doctor not found!');
+  }
+
+  const userDeletionResult = await User.deleteOne({ email });
+  if (!userDeletionResult.deletedCount) {
+    throw new ApiError(httpStatus.NOT_FOUND, 'User not found!');
+  }
+
+  return doctor;
 };
 
 export const DoctorsService = {

@@ -1,3 +1,4 @@
+/* eslint-disable no-unused-vars */
 import httpStatus from 'http-status';
 import mongoose from 'mongoose';
 import ApiError from '../../../errors/ApiErrors';
@@ -35,7 +36,7 @@ const createAdmin = async (
     const newAdmin = await Admin.create([admin], { session });
 
     if (!newAdmin.length) {
-      throw new ApiError(httpStatus.BAD_REQUEST, 'Failed to create faculty ');
+      throw new ApiError(httpStatus.BAD_REQUEST, 'Failed to create admin ');
     }
 
     user.admin = newAdmin[0]._id;
@@ -108,7 +109,7 @@ const createPatient = async (
   user: IUser
 ): Promise<IUser | null> => {
   // set role
-  user.role = 'admin';
+  user.role = 'patient';
 
   let newUserAllData = null;
   const session = await mongoose.startSession();
@@ -119,7 +120,7 @@ const createPatient = async (
     const newPatient = await Patient.create([patient], { session });
 
     if (!newPatient.length) {
-      throw new ApiError(httpStatus.BAD_REQUEST, 'Failed to create faculty ');
+      throw new ApiError(httpStatus.BAD_REQUEST, 'Failed to create patient ');
     }
 
     user.patient = newPatient[0]._id;
@@ -148,9 +149,137 @@ const createPatient = async (
   return newUserAllData;
 };
 
+const getAllUsers = async (): Promise<IUser[]> => {
+  const allUsers = await User.find({});
+  if (!allUsers || allUsers.length === 0) {
+    throw new ApiError(400, 'No Users found.');
+  }
+  return allUsers;
+};
+
+const getSingleUser = async (id: string): Promise<IUser | null> => {
+  const result = await User.findById(id);
+  return result;
+};
+
+const getUserProfile = async (id: string): Promise<IUser | null> => {
+  const user = await User.findOne({ _id: id });
+
+  if (!user) {
+    throw new ApiError(httpStatus.NOT_FOUND, 'User not found');
+  }
+
+  if (user.role === 'doctor') {
+    await user.populate('doctor');
+  } else if (user.role === 'patient') {
+    await user.populate('patient');
+  } else if (user.role === 'admin') {
+    await user.populate('admin');
+  }
+
+  return user;
+};
+
+// const updateUserProfile = async (
+//   id: string,
+//   payload: Partial<IUser>
+// ): Promise<IUser | null> => {
+//   const isExist = await User.findOne({ _id: id });
+
+//   if (!isExist) {
+//     throw new ApiError(httpStatus.NOT_FOUND, 'user not found !');
+//   }
+
+//   const { ...userData } = payload;
+
+//   const updatedUserData: Partial<IUser> = { ...userData };
+
+//   // dynamically handling
+//   // if (name && Object.keys(name).length > 0) {
+//   //   Object.keys(name).forEach(key => {
+//   //     const nameKey = `name.${key}` as keyof Partial<IUser>; // `name.fisrtName`
+//   //     (updatedUserData as any)[nameKey] = name[key as keyof typeof name];
+//   //   });
+//   // }
+//   const objectId = new Types.ObjectId(id); // Convert string to ObjectId
+//   const result = await User.findOneAndUpdate(objectId, updatedUserData, {
+//     new: true,
+//   });
+//   return result;
+// };
+
+// const updateUserProfile = async (
+//   id: string,
+//   payload: Partial<IUser>
+// ): Promise<IUser | null> => {
+//   // Check if the user exists
+//   const user = await User.findById(id);
+
+//   if (!user) {
+//     throw new ApiError(httpStatus.NOT_FOUND, 'User not found!');
+//   }
+
+//   // Update user profile fields
+//   const { role, ...userData } = payload;
+//   user.set(userData);
+
+//   // Update user role-specific fields
+//   if (role === 'doctor') {
+//     const doctorFields: Partial<IDoctor> = payload.doctor || {};
+//     user.doctor?.set(doctorFields);
+//   } else if (role === 'patient') {
+//     const patientFields: Partial<IPatient> = payload.patient || {};
+//     user.patient?.set(patientFields);
+//   } else if (role === 'admin') {
+//     const adminFields: Partial<IAdmin> = payload.admin || {};
+//     user.admin?.set(adminFields);
+//   }
+
+//   // Save the updated user and return it
+//   await user.save();
+//   return user;
+// };
+
+const updateUserProfile = async (
+  id: string,
+  payload: Partial<IUser>
+): Promise<IUser | null> => {
+  const isExist = await User.findOne({ _id: id });
+
+  if (!isExist) {
+    throw new ApiError(httpStatus.NOT_FOUND, 'User not found !');
+  }
+
+  // Retrieve user role
+  const userRole = isExist.role;
+
+  // Update the appropriate sub-document based on the role
+  if (userRole === 'doctor' && payload.doctor) {
+    await Doctor.updateOne({ _id: isExist.doctor }, { $set: payload.doctor });
+  } else if (userRole === 'patient' && payload.patient) {
+    await Patient.updateOne(
+      { _id: isExist.patient },
+      { $set: payload.patient }
+    );
+  } else if (userRole === 'admin' && payload.admin) {
+    await Admin.updateOne({ _id: isExist.admin }, { $set: payload.admin });
+  } else {
+    throw new ApiError(httpStatus.BAD_REQUEST, 'Invalid payload or role');
+  }
+
+  // Find and return the updated user
+  const updatedUser = await User.findOne({ _id: id });
+
+  return updatedUser;
+};
+
 export const UsersService = {
   createUser,
   createDoctor,
   createAdmin,
   createPatient,
+  getAllUsers,
+  getSingleUser,
+  getUserProfile,
+  updateUserProfile,
 };

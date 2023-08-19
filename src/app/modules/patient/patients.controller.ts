@@ -57,9 +57,8 @@ const updatePatient = catchAsync(async (req: Request, res: Response) => {
 });
 
 const deletePatient = catchAsync(async (req: Request, res: Response) => {
-  const id = req.params.id;
-
-  const result = await PatientsService.deletePatient(id);
+  const email = req.params.email;
+  const result = await PatientsService.deletePatient(email);
 
   sendResponse<IPatient>(res, {
     statusCode: httpStatus.OK,

@@ -1,6 +1,7 @@
 import httpStatus from 'http-status';
 import { Types } from 'mongoose';
 import ApiError from '../../../errors/ApiErrors';
+import { User } from '../user/users.model';
 import { IAdmin } from './admins.interface';
 import { Admin } from './admins.model';
 
@@ -22,6 +23,14 @@ const getAllAdmins = async (): Promise<IAdmin[]> => {
 
 const getSingleAdmin = async (id: string): Promise<IAdmin | null> => {
   const result = await Admin.findById(id);
+  return result;
+};
+
+const getAdminProfile = async (id: string): Promise<IAdmin | null> => {
+  const result = await Admin.findById({ _id: id });
+  if (!result) {
+    throw new ApiError(httpStatus.NOT_FOUND, 'User not found');
+  }
   return result;
 };
 
@@ -52,9 +61,20 @@ const updateAdmin = async (
   });
   return result;
 };
-const deleteAdmin = async (id: string): Promise<IAdmin | null> => {
-  const result = await Admin.findByIdAndDelete(id);
-  return result;
+
+const deleteAdmin = async (email: string): Promise<IAdmin | null> => {
+  const admin = await Admin.findOneAndDelete({ email });
+
+  if (!admin) {
+    throw new ApiError(httpStatus.NOT_FOUND, 'Admin not found!');
+  }
+
+  const userDeletionResult = await User.deleteOne({ email });
+  if (!userDeletionResult.deletedCount) {
+    throw new ApiError(httpStatus.NOT_FOUND, 'User not found!');
+  }
+
+  return admin;
 };
 
 export const AdminsService = {
@@ -63,4 +83,5 @@ export const AdminsService = {
   getSingleAdmin,
   updateAdmin,
   deleteAdmin,
+  getAdminProfile,
 };

@@ -6,7 +6,7 @@ import { IPatient, PatientModel } from './patients.interface';
 const patientSchema = new Schema<IPatient, PatientModel>(
   {
     phoneNumber: {
-      type: Number,
+      type: String,
       required: true,
       unique: true,
     },

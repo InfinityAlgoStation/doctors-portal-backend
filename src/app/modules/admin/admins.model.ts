@@ -6,7 +6,7 @@ import { AdminModel, IAdmin } from './admins.interface';
 const adminSchema = new Schema<IAdmin, AdminModel>(
   {
     phoneNumber: {
-      type: Number,
+      type: String,
       required: true,
       unique: true,
     },

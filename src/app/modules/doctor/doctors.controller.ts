@@ -65,9 +65,9 @@ const updateDoctor = catchAsync(async (req: Request, res: Response) => {
 });
 
 const deleteDoctor = catchAsync(async (req: Request, res: Response) => {
-  const id = req.params.id;
+  const email = req.params.email;
 
-  const result = await DoctorsService.deleteDoctor(id);
+  const result = await DoctorsService.deleteDoctor(email);
 
   sendResponse<IDoctor>(res, {
     statusCode: httpStatus.OK,

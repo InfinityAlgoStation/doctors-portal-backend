@@ -22,7 +22,7 @@ const doctorSchema = new Schema<IDoctor, DoctorModel>(
       unique: true,
     },
     phoneNumber: {
-      type: Number,
+      type: String,
       required: true,
       unique: true,
     },

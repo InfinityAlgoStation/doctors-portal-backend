@@ -6,11 +6,12 @@ export type UserName = {
 };
 
 export type IDoctor = {
+  _id: string;
   id: string;
   name: UserName;
   age: number | null;
   email: string;
-  phoneNumber: number;
+  phoneNumber: string;
   location:
     | 'Dhaka'
     | 'Chattogram'
@@ -27,9 +28,6 @@ export type IDoctor = {
   chamber: string | null;
   expertise: string[] | null;
   appointmentFee: number | null;
-  //todo   appointments: Appointment[];
-  //todo   clinics: Clinic[];
-  //todo   Other doctor-specific properties
 };
 
 export type DoctorModel = Model<IDoctor, Record<string, unknown>>;

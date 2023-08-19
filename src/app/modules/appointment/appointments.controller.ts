@@ -1,5 +1,6 @@
 import { Request, RequestHandler, Response } from 'express';
 import httpStatus from 'http-status';
+import { JwtPayload } from 'jsonwebtoken';
 import catchAsync from '../../../shared/catchAsync';
 import sendResponse from '../../../shared/sendResponse';
 import { IAppointment } from './appointments.interface';
@@ -20,7 +21,8 @@ const createAppointment: RequestHandler = catchAsync(
 );
 
 const getAllAppointment = catchAsync(async (req: Request, res: Response) => {
-  const result = await AppointmentsService.getAllAppointments();
+  const { id: userId } = req.user as JwtPayload;
+  const result = await AppointmentsService.getAllAppointments(userId);
 
   sendResponse<IAppointment[]>(res, {
     statusCode: httpStatus.OK,
@@ -30,9 +32,13 @@ const getAllAppointment = catchAsync(async (req: Request, res: Response) => {
   });
 });
 const getSingleAppointment = catchAsync(async (req: Request, res: Response) => {
-  const id = req.params.id;
+  const { id: userId } = req.user as JwtPayload;
+  const { id: appointmentId } = req.params;
 
-  const result = await AppointmentsService.getSingleAppointment(id);
+  const result = await AppointmentsService.getSingleAppointment(
+    appointmentId,
+    userId
+  );
 
   sendResponse<IAppointment>(res, {
     statusCode: httpStatus.OK,

@@ -2,8 +2,8 @@ import { Schema, model } from 'mongoose';
 import { AppointmentModel, IAppointment } from './appointments.interface';
 
 const appointmentSchema = new Schema<IAppointment, AppointmentModel>({
-  patientId: { type: Schema.Types.ObjectId, ref: 'Patient', required: true },
-  doctorId: { type: Schema.Types.ObjectId, ref: 'Doctor', required: true },
+  patient: { type: Schema.Types.ObjectId, ref: 'Patient', required: true },
+  doctor: { type: Schema.Types.ObjectId, ref: 'Doctor', required: true },
   gender: { type: String, enum: ['male', 'female'], required: true },
   bloodGroup: {
     type: String,
