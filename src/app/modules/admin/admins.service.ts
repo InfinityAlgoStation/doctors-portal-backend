@@ -5,14 +5,6 @@ import { User } from '../user/users.model';
 import { IAdmin } from './admins.interface';
 import { Admin } from './admins.model';
 
-const createAdmin = async (admin: IAdmin): Promise<IAdmin | null> => {
-  const createdAdmin = await Admin.create(admin);
-  if (!createdAdmin) {
-    throw new ApiError(400, 'failed to create admin !');
-  }
-  return createdAdmin;
-};
-
 const getAllAdmins = async (): Promise<IAdmin[]> => {
   const allAdmins = await Admin.find({});
   if (!allAdmins || allAdmins.length === 0) {
@@ -78,7 +70,6 @@ const deleteAdmin = async (email: string): Promise<IAdmin | null> => {
 };
 
 export const AdminsService = {
-  createAdmin,
   getAllAdmins,
   getSingleAdmin,
   updateAdmin,

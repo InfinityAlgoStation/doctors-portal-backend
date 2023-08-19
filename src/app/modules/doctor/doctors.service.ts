@@ -9,15 +9,6 @@ import { doctorSearchableFields } from './doctors.constant';
 import { IDoctor, IDoctorFilters } from './doctors.interface';
 import { Doctor } from './doctors.model';
 
-const createDoctor = async (doctor: IDoctor): Promise<IDoctor | null> => {
-  const createdDoctor = await Doctor.create(doctor);
-
-  if (!createdDoctor) {
-    throw new Error('failed to create Doctor !');
-  }
-  return createdDoctor;
-};
-
 const getAllDoctors = async (
   filters: IDoctorFilters,
   paginationOptions: IPaginationOptions
@@ -121,7 +112,6 @@ const deleteDoctor = async (email: string): Promise<IDoctor | null> => {
 };
 
 export const DoctorsService = {
-  createDoctor,
   getAllDoctors,
   getSingleDoctor,
   updateDoctor,

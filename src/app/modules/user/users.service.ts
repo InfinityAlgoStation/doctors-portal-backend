@@ -180,66 +180,6 @@ const getUserProfile = async (id: string): Promise<IUser | null> => {
   return user;
 };
 
-// const updateUserProfile = async (
-//   id: string,
-//   payload: Partial<IUser>
-// ): Promise<IUser | null> => {
-//   const isExist = await User.findOne({ _id: id });
-
-//   if (!isExist) {
-//     throw new ApiError(httpStatus.NOT_FOUND, 'user not found !');
-//   }
-
-//   const { ...userData } = payload;
-
-//   const updatedUserData: Partial<IUser> = { ...userData };
-
-//   // dynamically handling
-//   // if (name && Object.keys(name).length > 0) {
-//   //   Object.keys(name).forEach(key => {
-//   //     const nameKey = `name.${key}` as keyof Partial<IUser>; // `name.fisrtName`
-//   //     (updatedUserData as any)[nameKey] = name[key as keyof typeof name];
-//   //   });
-//   // }
-//   const objectId = new Types.ObjectId(id); // Convert string to ObjectId
-//   const result = await User.findOneAndUpdate(objectId, updatedUserData, {
-//     new: true,
-//   });
-//   return result;
-// };
-
-// const updateUserProfile = async (
-//   id: string,
-//   payload: Partial<IUser>
-// ): Promise<IUser | null> => {
-//   // Check if the user exists
-//   const user = await User.findById(id);
-
-//   if (!user) {
-//     throw new ApiError(httpStatus.NOT_FOUND, 'User not found!');
-//   }
-
-//   // Update user profile fields
-//   const { role, ...userData } = payload;
-//   user.set(userData);
-
-//   // Update user role-specific fields
-//   if (role === 'doctor') {
-//     const doctorFields: Partial<IDoctor> = payload.doctor || {};
-//     user.doctor?.set(doctorFields);
-//   } else if (role === 'patient') {
-//     const patientFields: Partial<IPatient> = payload.patient || {};
-//     user.patient?.set(patientFields);
-//   } else if (role === 'admin') {
-//     const adminFields: Partial<IAdmin> = payload.admin || {};
-//     user.admin?.set(adminFields);
-//   }
-
-//   // Save the updated user and return it
-//   await user.save();
-//   return user;
-// };
-
 const updateUserProfile = async (
   id: string,
   payload: Partial<IUser>

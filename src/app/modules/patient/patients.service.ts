@@ -5,14 +5,6 @@ import { User } from '../user/users.model';
 import { IPatient } from './patients.interface';
 import { Patient } from './patients.model';
 
-const createPatient = async (patient: IPatient): Promise<IPatient | null> => {
-  const createdPatient = await Patient.create(patient);
-  if (!createdPatient) {
-    throw new ApiError(400, 'failed to create Patient !');
-  }
-  return createdPatient;
-};
-
 const getAllPatients = async (): Promise<IPatient[]> => {
   const allPatients = await Patient.find({});
   if (!allPatients || allPatients.length === 0) {
@@ -54,38 +46,6 @@ const updatePatient = async (
   return result;
 };
 
-// const deletePatient = async (email: string): Promise<IPatient | null> => {
-//   // check if the patient is exist
-//   const isExist = await Patient.findOne({ email });
-
-//   if (!isExist) {
-//     throw new ApiError(httpStatus.NOT_FOUND, 'Patient not found !');
-//   }
-//   const isUserExist = await User.findOne({ email });
-//   if (!isUserExist) {
-//     throw new ApiError(httpStatus.NOT_FOUND, 'user not found !');
-//   }
-
-//   const session = await mongoose.startSession();
-
-//   try {
-//     session.startTransaction();
-//     //delete patient first
-//     const patient = await Patient.findOneAndDelete({ email }, { session });
-//     if (!patient) {
-//       throw new ApiError(404, 'Failed to delete patient');
-//     }
-//     //delete user
-//     await User.deleteOne({ email });
-//     session.commitTransaction();
-//     session.endSession();
-
-//     return patient;
-//   } catch (error) {
-//     session.abortTransaction();
-//     throw error;
-//   }
-// };
 const deletePatient = async (email: string): Promise<IPatient | null> => {
   const patient = await Patient.findOneAndDelete({ email });
 
@@ -102,7 +62,6 @@ const deletePatient = async (email: string): Promise<IPatient | null> => {
 };
 
 export const PatientsService = {
-  createPatient,
   getAllPatients,
   getSinglePatient,
   updatePatient,

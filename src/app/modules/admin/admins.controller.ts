@@ -1,24 +1,10 @@
-import { Request, RequestHandler, Response } from 'express';
+import { Request, Response } from 'express';
 import httpStatus from 'http-status';
 import { JwtPayload } from 'jsonwebtoken';
 import catchAsync from '../../../shared/catchAsync';
 import sendResponse from '../../../shared/sendResponse';
 import { IAdmin } from './admins.interface';
 import { AdminsService } from './admins.service';
-
-const createAdmin: RequestHandler = catchAsync(
-  async (req: Request, res: Response) => {
-    const { ...admin } = req.body;
-    const result = await AdminsService.createAdmin(admin);
-
-    sendResponse<IAdmin>(res, {
-      statusCode: httpStatus.OK,
-      success: true,
-      message: 'Admin created successfully!',
-      data: result,
-    });
-  }
-);
 
 const getAllAdmin = catchAsync(async (req: Request, res: Response) => {
   const result = await AdminsService.getAllAdmins();
@@ -83,7 +69,6 @@ const deleteAdmin = catchAsync(async (req: Request, res: Response) => {
 });
 
 export const AdminsController = {
-  createAdmin,
   getAllAdmin,
   getSingleAdmin,
   updateAdmin,

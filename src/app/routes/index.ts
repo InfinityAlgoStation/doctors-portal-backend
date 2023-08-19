@@ -18,12 +18,12 @@ const modulesRoute = [
     route: UsersRoutes,
   },
   {
-    path: '/doctors',
-    route: DoctorsRoutes,
-  },
-  {
     path: '/admins',
     route: AdminsRoutes,
+  },
+  {
+    path: '/doctors',
+    route: DoctorsRoutes,
   },
   {
     path: '/patients',

@@ -1,23 +1,9 @@
-import { Request, RequestHandler, Response } from 'express';
+import { Request, Response } from 'express';
 import httpStatus from 'http-status';
 import catchAsync from '../../../shared/catchAsync';
 import sendResponse from '../../../shared/sendResponse';
 import { IPatient } from './patients.interface';
 import { PatientsService } from './patients.service';
-
-const createPatient: RequestHandler = catchAsync(
-  async (req: Request, res: Response) => {
-    const { ...patient } = req.body;
-    const result = await PatientsService.createPatient(patient);
-
-    sendResponse<IPatient>(res, {
-      statusCode: httpStatus.OK,
-      success: true,
-      message: 'Patient created successfully!',
-      data: result,
-    });
-  }
-);
 
 const getAllPatient = catchAsync(async (req: Request, res: Response) => {
   const result = await PatientsService.getAllPatients();
@@ -69,7 +55,6 @@ const deletePatient = catchAsync(async (req: Request, res: Response) => {
 });
 
 export const PatientsController = {
-  createPatient,
   getAllPatient,
   getSinglePatient,
   updatePatient,
