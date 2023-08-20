@@ -1,8 +1,9 @@
 import express from 'express';
 import { AdminsRoutes } from '../modules/admin/admins.route';
-import { AppointmentRoutes } from '../modules/appointment/appointments.route';
+import { AppointmentsRoutes } from '../modules/appointment/appointments.route';
 import { AuthRoutes } from '../modules/auth/auth.route';
 import { DoctorsRoutes } from '../modules/doctor/doctors.route';
+import { FeedbacksRoutes } from '../modules/feedback/feedbacks.route';
 import { PatientsRoutes } from '../modules/patient/patients.route';
 import { UsersRoutes } from '../modules/user/users.route';
 
@@ -30,8 +31,12 @@ const modulesRoute = [
     route: PatientsRoutes,
   },
   {
-    path: '/appointment',
-    route: AppointmentRoutes,
+    path: '/appointments',
+    route: AppointmentsRoutes,
+  },
+  {
+    path: '/feedbacks',
+    route: FeedbacksRoutes,
   },
 ];
 

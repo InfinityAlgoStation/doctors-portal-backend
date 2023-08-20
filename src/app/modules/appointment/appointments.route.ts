@@ -5,15 +5,20 @@ import { AppointmentsController } from './appointments.controller';
 
 const router = express.Router();
 
-router.post(
-  '/',
-  auth(ENUM_USER_ROLE.PATIENT),
-  AppointmentsController.createAppointment
+router.patch(
+  '/:id',
+  auth(ENUM_USER_ROLE.ADMIN),
+  AppointmentsController.updateAppointment
 );
 router.get(
   '/:id',
   auth(ENUM_USER_ROLE.ADMIN, ENUM_USER_ROLE.DOCTOR, ENUM_USER_ROLE.PATIENT),
   AppointmentsController.getSingleAppointment
+);
+router.post(
+  '/',
+  auth(ENUM_USER_ROLE.ADMIN, ENUM_USER_ROLE.DOCTOR, ENUM_USER_ROLE.PATIENT),
+  AppointmentsController.bookingAppointment
 );
 router.get(
   '/',
@@ -21,4 +26,4 @@ router.get(
   AppointmentsController.getAllAppointment
 );
 
-export const AppointmentRoutes = router;
+export const AppointmentsRoutes = router;

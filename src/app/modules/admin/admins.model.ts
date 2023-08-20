@@ -28,6 +28,10 @@ const adminSchema = new Schema<IAdmin, AdminModel>(
         type: String,
       },
     },
+    profileImage: {
+      type: String,
+      default: null,
+    },
   },
   {
     timestamps: true,

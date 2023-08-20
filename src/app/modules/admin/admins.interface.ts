@@ -10,6 +10,7 @@ export type IAdmin = {
   phoneNumber: string;
   email: string;
   name: AdminName;
+  profileImage?: string;
 };
 
 export type AdminModel = Model<IAdmin, Record<string, unknown>>;

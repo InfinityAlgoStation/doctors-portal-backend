@@ -67,6 +67,10 @@ const doctorSchema = new Schema<IDoctor, DoctorModel>(
       type: Number,
       default: null,
     },
+    profileImage: {
+      type: String,
+      default: null,
+    },
   },
   {
     timestamps: true,

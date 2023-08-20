@@ -6,10 +6,10 @@ import sendResponse from '../../../shared/sendResponse';
 import { IAppointment } from './appointments.interface';
 import { AppointmentsService } from './appointments.service';
 
-const createAppointment: RequestHandler = catchAsync(
+const bookingAppointment: RequestHandler = catchAsync(
   async (req: Request, res: Response) => {
     const { ...appointment } = req.body;
-    const result = await AppointmentsService.createAppointment(appointment);
+    const result = await AppointmentsService.bookingAppointment(appointment);
 
     sendResponse<IAppointment>(res, {
       statusCode: httpStatus.OK,
@@ -31,6 +31,7 @@ const getAllAppointment = catchAsync(async (req: Request, res: Response) => {
     data: result,
   });
 });
+
 const getSingleAppointment = catchAsync(async (req: Request, res: Response) => {
   const { id: userId } = req.user as JwtPayload;
   const { id: appointmentId } = req.params;
@@ -48,8 +49,23 @@ const getSingleAppointment = catchAsync(async (req: Request, res: Response) => {
   });
 });
 
+const updateAppointment = catchAsync(async (req: Request, res: Response) => {
+  const id = req.params.id;
+  const updatedData = req.body;
+
+  const result = await AppointmentsService.updateAppointment(id, updatedData);
+
+  sendResponse<IAppointment>(res, {
+    statusCode: httpStatus.OK,
+    success: true,
+    message: 'Appointment updated successfully !',
+    data: result,
+  });
+});
+
 export const AppointmentsController = {
-  createAppointment,
+  bookingAppointment,
   getAllAppointment,
   getSingleAppointment,
+  updateAppointment,
 };

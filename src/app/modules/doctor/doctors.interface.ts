@@ -28,6 +28,7 @@ export type IDoctor = {
   chamber: string | null;
   expertise: string[] | null;
   appointmentFee: number | null;
+  profileImage?: string;
 };
 
 export type DoctorModel = Model<IDoctor, Record<string, unknown>>;

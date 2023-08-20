@@ -38,6 +38,10 @@ const patientSchema = new Schema<IPatient, PatientModel>(
       enum: ['A+', 'A-', 'B+', 'B-', 'AB+', 'AB-', 'O+', 'O-', null],
       default: null,
     },
+    profileImage: {
+      type: String,
+      default: null,
+    },
   },
   {
     timestamps: true,
