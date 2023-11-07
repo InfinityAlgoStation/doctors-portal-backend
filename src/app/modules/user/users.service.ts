@@ -6,8 +6,8 @@ import { IAdmin } from '../admin/admins.interface';
 import { Admin } from '../admin/admins.model';
 import { IDoctor } from '../doctor/doctors.interface';
 import { Doctor } from '../doctor/doctors.model';
+import { IPatient } from '../patient/patients.interface';
 import { Patient } from '../patient/patients.model';
-import { IPatient } from './../patient/patients.interface';
 import { IUser } from './users.interface';
 import { User } from './users.model';
 
@@ -83,7 +83,7 @@ const createDoctor = async (
       throw new ApiError(httpStatus.BAD_REQUEST, 'failed to create doctor');
     }
     //set doctor -> _id into user.doctor
-    user.doctor = newDoctor[0];
+    user.doctor = new mongoose.Types.ObjectId(newDoctor[0]._id);
     const newUser = await User.create([user], { session });
     if (!newUser.length) {
       throw new ApiError(httpStatus.BAD_REQUEST, 'failed to created user');
@@ -123,7 +123,7 @@ const createPatient = async (
       throw new ApiError(httpStatus.BAD_REQUEST, 'Failed to create patient ');
     }
 
-    user.patient = newPatient[0]._id;
+    user.patient = new mongoose.Types.ObjectId(newPatient[0]._id);
 
     const newUser = await User.create([user], { session });
 
