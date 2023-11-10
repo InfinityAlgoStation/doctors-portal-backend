@@ -1,117 +1,148 @@
-import httpStatus from 'http-status';
-import { SortOrder, Types } from 'mongoose';
-import ApiError from '../../../errors/ApiErrors';
+import { Doctor, Prisma } from '@prisma/client';
 import { paginationHelpers } from '../../../helpers/paginationHelpers';
 import { IGenericResponse } from '../../../interfaces/common';
 import IPaginationOptions from '../../../interfaces/paginations';
-import { User } from '../user/users.model';
-import { doctorSearchableFields } from './doctors.constant';
-import { IDoctor, IDoctorFilters } from './doctors.interface';
-import { Doctor } from './doctors.model';
+import prisma from '../../../shared/prisma';
+import {
+  doctorRelationalFields,
+  doctorRelationalFieldsMapper,
+  doctorSearchableFields,
+} from './doctors.constant';
+import { IDoctorFilters } from './doctors.interface';
+
+const createDoctor = async (doctor: Doctor): Promise<Doctor> => {
+  const result = await prisma.doctor.create({
+    data: doctor,
+  });
+  return result;
+};
 
 const getAllDoctors = async (
   filters: IDoctorFilters,
-  paginationOptions: IPaginationOptions
-): Promise<IGenericResponse<IDoctor[]>> => {
-  const { searchTerm, ...filtersData } = filters;
-  const { page, limit, skip, sortBy, sortOrder } =
-    paginationHelpers.calculatePagination(paginationOptions);
+  options: IPaginationOptions
+): Promise<IGenericResponse<Doctor[]>> => {
+  const { limit, page, skip } = paginationHelpers.calculatePagination(options);
+  const { searchTerm, ...filterData } = filters;
 
   const andConditions = [];
 
   if (searchTerm) {
     andConditions.push({
-      $or: doctorSearchableFields.map(field => ({
+      OR: doctorSearchableFields.map(field => ({
         [field]: {
-          $regex: searchTerm,
-          $options: 'i',
+          contains: searchTerm,
+          mode: 'insensitive',
         },
       })),
     });
   }
 
-  if (Object.keys(filtersData).length) {
+  if (Object.keys(filterData).length > 0) {
     andConditions.push({
-      $and: Object.entries(filtersData).map(([field, value]) => ({
-        [field]: value,
-      })),
+      AND: Object.keys(filterData).map(key => {
+        if (doctorRelationalFields.includes(key)) {
+          return {
+            [doctorRelationalFieldsMapper[key]]: {
+              id: (filterData as any)[key],
+            },
+          };
+        } else {
+          return {
+            [key]: {
+              equals: (filterData as any)[key],
+            },
+          };
+        }
+      }),
     });
   }
 
-  const sortConditions: { [key: string]: SortOrder } = {};
+  const whereConditions: Prisma.DoctorWhereInput =
+    andConditions.length > 0 ? { AND: andConditions } : {};
 
-  if (sortBy && sortOrder) {
-    sortConditions[sortBy] = sortOrder;
-  }
-  const whereConditions =
-    andConditions.length > 0 ? { $and: andConditions } : {};
-
-  const result = await Doctor.find(whereConditions)
-    .sort(sortConditions)
-    .skip(skip)
-    .limit(limit);
-
-  const total = await Doctor.countDocuments(whereConditions);
+  const result = await prisma.doctor.findMany({
+    include: {
+      specialization: true,
+      availableDoctors: {
+        include: {
+          availableServices: {
+            include: {
+              service: true,
+              slot: true,
+            },
+          },
+          slot: true,
+        },
+      },
+    },
+    where: whereConditions,
+    skip,
+    take: limit,
+    orderBy:
+      options.sortBy && options.sortOrder
+        ? { [options.sortBy]: options.sortOrder }
+        : {
+            createdAt: 'desc',
+          },
+  });
+  const total = await prisma.doctor.count({
+    where: whereConditions,
+  });
 
   return {
     meta: {
+      total,
       page,
       limit,
-      total,
     },
     data: result,
   };
 };
 
-const getSingleDoctor = async (id: string): Promise<IDoctor | null> => {
-  const result = await Doctor.findById(id);
-  return result;
-};
-
-const updateDoctor = async (
-  id: string,
-  payload: Partial<IDoctor>
-): Promise<IDoctor | null> => {
-  const isExist = await Doctor.findOne({ _id: id });
-
-  if (!isExist) {
-    throw new ApiError(httpStatus.NOT_FOUND, 'Doctor not found !');
-  }
-
-  const { name, ...doctorData } = payload;
-
-  const updatedUserData: Partial<IDoctor> = { ...doctorData };
-
-  // dynamically handling
-  if (name && Object.keys(name).length > 0) {
-    Object.keys(name).forEach(key => {
-      const nameKey = `name.${key}` as keyof Partial<IDoctor>; // `name.fisrtName`
-      (updatedUserData as any)[nameKey] = name[key as keyof typeof name];
-    });
-  }
-  const objectId = new Types.ObjectId(id); // Convert string to ObjectId
-  const result = await Doctor.findOneAndUpdate(objectId, updatedUserData, {
-    new: true,
+const getSingleDoctor = async (id: string): Promise<Doctor | null> => {
+  const result = await prisma.doctor.findUnique({
+    where: {
+      id: id,
+    },
+    include: {
+      specialization: true,
+      availableDoctors: {
+        include: {
+          availableServices: {
+            include: {
+              service: true,
+              slot: true,
+            },
+          },
+          slot: true,
+        },
+      },
+    },
   });
   return result;
 };
 
-const deleteDoctor = async (email: string): Promise<IDoctor | null> => {
-  const doctor = await Doctor.findOneAndDelete({ email });
+const updateDoctor = async (id: string, doctor: Doctor): Promise<Doctor> => {
+  const result = await prisma.doctor.update({
+    where: {
+      id: id,
+    },
+    data: doctor,
+  });
+  return result;
+};
 
-  if (!doctor) {
-    throw new ApiError(httpStatus.NOT_FOUND, 'Doctor not found!');
-  }
-
-  const userDeletionResult = await User.deleteOne({ email });
-  if (!userDeletionResult.deletedCount) {
-    throw new ApiError(httpStatus.NOT_FOUND, 'User not found!');
-  }
-
-  return doctor;
+const deleteDoctor = async (id: string): Promise<Doctor> => {
+  const result = await prisma.doctor.delete({
+    where: {
+      id: id,
+    },
+  });
+  return result;
 };
 
 export const DoctorsService = {
+  createDoctor,
   getAllDoctors,
   getSingleDoctor,
   updateDoctor,

@@ -1,29 +1,21 @@
 import express from 'express';
-import { ENUM_USER_ROLE } from '../../../enums/user';
-import auth from '../../middlewares/auth';
 import { AppointmentsController } from './appointments.controller';
 
 const router = express.Router();
 
+router.post('/book-appointment', AppointmentsController.bookingAppointment);
 router.patch(
-  '/:id',
-  auth(ENUM_USER_ROLE.ADMIN),
-  AppointmentsController.updateAppointment
+  '/cancel-appointment/:id',
+  AppointmentsController.cancelAppointment
 );
-router.get(
-  '/:id',
-  auth(ENUM_USER_ROLE.ADMIN, ENUM_USER_ROLE.DOCTOR, ENUM_USER_ROLE.PATIENT),
-  AppointmentsController.getSingleAppointment
+router.patch('/start-appointment/:id', AppointmentsController.startAppointment);
+router.patch(
+  '/finish-appointment/:id',
+  AppointmentsController.finishAppointment
 );
-router.post(
-  '/',
-  //auth(ENUM_USER_ROLE.ADMIN, ENUM_USER_ROLE.DOCTOR, ENUM_USER_ROLE.PATIENT),
-  AppointmentsController.bookingAppointment
-);
-router.get(
-  '/',
-  auth(ENUM_USER_ROLE.ADMIN, ENUM_USER_ROLE.DOCTOR, ENUM_USER_ROLE.PATIENT),
-  AppointmentsController.getAllAppointment
-);
+router.get('/', AppointmentsController.getAllAppointment);
+router.get('/:id', AppointmentsController.getSingleAppointment);
+router.patch('/:id', AppointmentsController.updateAppointment);
+router.delete('/:id', AppointmentsController.deleteAppointment);
 
 export const AppointmentsRoutes = router;

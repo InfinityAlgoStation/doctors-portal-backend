@@ -1,26 +1,14 @@
-export const gender = ['male', 'female'];
-export const bloodGroup = ['A+', 'A-', 'B+', 'B-', 'AB+', 'AB-', 'O+', 'O-'];
-
 export const doctorSearchableFields = [
-  'email',
+  'fullName',
+  'address',
+  'qualification',
   'phoneNumber',
-  'gender',
-  'name.firstName',
-  'name.middleName',
-  'name.lastName',
-  'location',
-  'chamber',
-  'expertise',
-  'appointmentFee',
+  'email',
 ];
 
-export const doctorFilterableFields = [
-  'searchTerm',
-  'phoneNumber',
-  'email',
-  'gender',
-  'location',
-  'expertise',
-  'chamber',
-  'appointmentFee',
-];
+export const doctorFilterableFields = ['searchTerm', 'gender', 'location'];
+
+export const doctorRelationalFields: string[] = ['specializationId'];
+export const doctorRelationalFieldsMapper: { [key: string]: string } = {
+  specializationId: 'specializationId',
+};

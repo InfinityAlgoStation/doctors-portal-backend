@@ -1,67 +1,74 @@
-import httpStatus from 'http-status';
-import { Types } from 'mongoose';
-import ApiError from '../../../errors/ApiErrors';
-import { User } from '../user/users.model';
-import { IPatient } from './patients.interface';
-import { Patient } from './patients.model';
+import { MedicalProfile, Patient } from '@prisma/client';
+import prisma from '../../../shared/prisma';
 
-const getAllPatients = async (): Promise<IPatient[]> => {
-  const allPatients = await Patient.find({});
-  if (!allPatients || allPatients.length === 0) {
-    throw new ApiError(400, 'No Patients found.');
-  }
-  return allPatients;
+const createPatient = async (
+  patient: Patient,
+  medicalProfile: MedicalProfile
+): Promise<any> => {
+  const result = await prisma.$transaction(async transactionCLient => {
+    const createPatient = await transactionCLient.patient.create({
+      data: patient,
+    });
+    const createMedicalProfile = await transactionCLient.medicalProfile.create({
+      data: {
+        ...medicalProfile,
+        patientId: createPatient.id,
+
+        profileStatus: 'active',
+      },
+    });
+    return {
+      patient: createPatient,
+      medicalProfile: createMedicalProfile,
+    };
+  });
+  return result;
 };
 
-const getSinglePatient = async (id: string): Promise<IPatient | null> => {
-  const result = await Patient.findById(id);
+const getAllPatients = async (): Promise<Patient[] | any> => {
+  const result = await prisma.patient.findMany();
+  const total = await prisma.patient.count();
+  return {
+    meta: {
+      total,
+    },
+    data: result,
+  };
+};
+
+const getSinglePatient = async (id: string): Promise<Patient | null> => {
+  const result = await prisma.patient.findUnique({
+    where: {
+      id: id,
+    },
+  });
   return result;
 };
 
 const updatePatient = async (
   id: string,
-  payload: Partial<IPatient>
-): Promise<IPatient | null> => {
-  const isExist = await Patient.findOne({ _id: id });
-
-  if (!isExist) {
-    throw new ApiError(httpStatus.NOT_FOUND, 'Patient not found !');
-  }
-
-  const { name, ...patientData } = payload;
-
-  const updatedUserData: Partial<IPatient> = { ...patientData };
-
-  // dynamically handling
-  if (name && Object.keys(name).length > 0) {
-    Object.keys(name).forEach(key => {
-      const nameKey = `name.${key}` as keyof Partial<IPatient>; // `name.fisrtName`
-      (updatedUserData as any)[nameKey] = name[key as keyof typeof name];
-    });
-  }
-  const objectId = new Types.ObjectId(id); // Convert string to ObjectId
-  const result = await Patient.findOneAndUpdate(objectId, updatedUserData, {
-    new: true,
+  patient: Patient
+): Promise<Patient> => {
+  const result = await prisma.patient.update({
+    where: {
+      id: id,
+    },
+    data: patient,
   });
   return result;
 };
 
-const deletePatient = async (email: string): Promise<IPatient | null> => {
-  const patient = await Patient.findOneAndDelete({ email });
-
-  if (!patient) {
-    throw new ApiError(httpStatus.NOT_FOUND, 'Patient not found!');
-  }
-
-  const userDeletionResult = await User.deleteOne({ email });
-  if (!userDeletionResult.deletedCount) {
-    throw new ApiError(httpStatus.NOT_FOUND, 'User not found!');
-  }
-
-  return patient;
+const deletePatient = async (id: string): Promise<Patient> => {
+  const result = await prisma.patient.delete({
+    where: {
+      id: id,
+    },
+  });
+  return result;
 };
 
-export const PatientsService = {
+export const PatientService = {
+  createPatient,
   getAllPatients,
   getSinglePatient,
   updatePatient,

@@ -9,3 +9,8 @@ export type ILoginUserResponse = {
 export type IRefreshTokenResponse = {
   accessToken: string;
 };
+export type User = {
+  id: string;
+  role: string;
+  // Add other properties as needed
+};

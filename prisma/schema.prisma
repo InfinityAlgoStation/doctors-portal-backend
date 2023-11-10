@@ -10,8 +10,256 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-model User {
-  id    Int     @id @default(autoincrement())
-  email String  @unique
-  name  String?
+// schema.prisma
+
+// model User {
+//   id        Int      @id @default(autoincrement())
+//   email     String   @unique
+//   password  String
+//   role      String
+//   doctorId  String
+//   patientId String
+//   adminId   String
+//   doctor    Doctor?  @relation(fields: [doctorId], references: [id])
+//   patient   Patient? @relation(fields: [patientId], references: [id])
+//   admin     Admin?   @relation(fields: [adminId], references: [id])
+
+//   createdAt DateTime @default(now())
+//   updatedAt DateTime @updatedAt
+// }
+
+model SuperAdmin {
+  id           String   @id @default(uuid())
+  phoneNumber  String   @unique
+  email        String   @unique
+  password     String
+  role         UserRole
+  fullName     String   @map("full_name")
+  profileImage String?
+  address      String?
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  @@map("super_admins")
+}
+
+model Admin {
+  id           String   @id @default(uuid())
+  phoneNumber  String   @unique
+  email        String   @unique
+  password     String
+  role         UserRole
+  fullName     String   @map("full_name")
+  profileImage String
+  address      String
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  @@map("admins")
+}
+
+model Doctor {
+  id               String         @id @default(uuid())
+  email            String         @unique
+  phoneNumber      String         @unique
+  password         String
+  role             UserRole
+  fullName         String         @map("full_name")
+  address          String
+  location         Location
+  gender           Gender
+  bloodGroup       BloodGroup
+  dob              String         @map("date_of_birth")
+  qualification    String
+  verifiedLicense  Boolean        @default(false)
+  profileImage     String?
+  specializationId String         @map("specialization_id")
+  specialization   Specialization @relation(fields: [specializationId], references: [id])
+
+  createdAt        DateTime          @default(now())
+  updatedAt        DateTime          @updatedAt
+  availableDoctors AvailableDoctor[]
+
+  @@map("doctors")
+}
+
+model Specialization {
+  id          String    @id @default(uuid())
+  name        String    @unique
+  description String?
+  createdAt   DateTime  @default(now()) @map("created_at")
+  updatedAt   DateTime  @updatedAt @map("updated_at")
+  doctors     Doctor[]
+  service     Service[]
+
+  @@map("specializations")
+}
+
+model Patient {
+  id             String          @id @default(uuid())
+  phoneNumber    String?         @unique
+  email          String          @unique
+  password       String
+  role           UserRole
+  fullName       String          @map("full_name")
+  profileImage   String?
+  createdAt      DateTime        @default(now())
+  updatedAt      DateTime        @updatedAt
+  appointments   Appointment[]
+  medicalProfile MedicalProfile?
+
+  @@map("patients")
+}
+
+model MedicalProfile {
+  id               String     @id @default(uuid())
+  profilePricture  String?    @map("profile_pricture")
+  address          String
+  dob              String     @map("date_of_birth")
+  gender           Gender
+  bloodGroup       BloodGroup
+  medicalHistory   String?    @map("medical_history")
+  emergencyContact String     @map("emergency_contact")
+  profileStatus    String     @map("profile_status")
+  createdAt        DateTime   @default(now()) @map("created_at")
+  updatedAt        DateTime   @updatedAt @map("updated_at")
+
+  patientId String  @unique @map("patient_id")
+  patient   Patient @relation(fields: [patientId], references: [id])
+
+  @@map("medical_history")
+}
+
+model Appointment {
+  id              String   @id @default(uuid())
+  appointmentDate DateTime @map("appointment_date")
+  status          String   @map("appointment_status")
+  createdAt       DateTime @default(now()) @map("created_at")
+  updatedAt       DateTime @updatedAt @map("updated_at")
+
+  patientId String  @map("patient_id")
+  patient   Patient @relation(fields: [patientId], references: [id])
+
+  availableServiceId String           @map("available_service_id")
+  availableService   AvailableService @relation(fields: [availableServiceId], references: [id])
+  payment            Payment?
+
+  @@map("appointments")
+}
+
+model AvailableDoctor {
+  id            String   @id @default(uuid())
+  availableDate DateTime @map("available_date")
+  createdAt     DateTime @default(now()) @map("created_at")
+  updatedAt     DateTime @updatedAt @map("updated_at")
+
+  doctorId String @map("doctor_id")
+  doctor   Doctor @relation(fields: [doctorId], references: [id])
+
+  slotId String    @map("slot_id")
+  slot   TimeSlots @relation(fields: [slotId], references: [id])
+
+  availableServices AvailableService[]
+
+  @@unique([doctorId, slotId, availableDate])
+  @@map("available_doctors")
+}
+
+model AvailableService {
+  id             String   @id @default(uuid())
+  slotDate       DateTime @map("slot_date")
+  availableSeats Int      @map("available_seats")
+  isBooked       Boolean  @default(false) @map("is_booked")
+  fees           String
+  createdAt      DateTime @default(now()) @map("created_at")
+  updatedAt      DateTime @updatedAt @map("updated_at")
+
+  appointments Appointment[]
+
+  serviceId String  @map("service_id")
+  service   Service @relation(fields: [serviceId], references: [id])
+
+  slotId String    @map("slot_id")
+  slot   TimeSlots @relation(fields: [slotId], references: [id])
+
+  availableDoctorId String           @map("available_doctor_id")
+  availableDoctor   AvailableDoctor? @relation(fields: [availableDoctorId], references: [id])
+
+  @@unique([slotId, serviceId, slotDate, availableDoctorId])
+  @@map("available_services")
+}
+
+model Service {
+  id          String   @id @default(uuid())
+  name        String   @unique
+  description String?
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  availableServices AvailableService[]
+
+  specializationId String         @map("specialization_id")
+  specialization   Specialization @relation(fields: [specializationId], references: [id])
+
+  @@map("services")
+}
+
+model TimeSlots {
+  id        String @id @default(uuid())
+  startTime String @map("start_time")
+
+  createdAt         DateTime           @default(now()) @map("created_at")
+  updatedAt         DateTime           @updatedAt @map("updated_at")
+  availableDoctors  AvailableDoctor[]
+  availableServices AvailableService[]
+
+  @@map("time_slots")
+}
+
+model Payment {
+  id            String   @id @default(uuid())
+  amount        String
+  paymentDate   DateTime @default(now()) @map("payment_date")
+  paymentStatus String   @map("payment_status")
+  createdAt     DateTime @default(now()) @map("created_at")
+  updatedAt     DateTime @updatedAt @map("updated_at")
+
+  appointmentId String      @unique @map("apoointment_id")
+  appointment   Appointment @relation(fields: [appointmentId], references: [id])
+
+  @@map("payment")
+}
+
+enum UserRole {
+  super_admin
+  admin
+  doctor
+  patient
+}
+
+enum Location {
+  Dhaka
+  Chattogram
+  Barishal
+  Rajshahi
+  Sylhet
+  Comilla
+  Mymensingh
+  Rangpur
+}
+
+enum Gender {
+  male
+  female
+}
+
+enum BloodGroup {
+  A_POSITIVE
+  A_NEGATIVE
+  B_POSITIVE
+  B_NEGATIVE
+  AB_POSITIVE
+  AB_NEGATIVE
+  O_POSITIVE
+  O_NEGATIVE
 }

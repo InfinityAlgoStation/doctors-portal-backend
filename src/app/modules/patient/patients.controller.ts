@@ -1,26 +1,41 @@
+import { Patient } from '@prisma/client';
 import { Request, Response } from 'express';
 import httpStatus from 'http-status';
 import catchAsync from '../../../shared/catchAsync';
 import sendResponse from '../../../shared/sendResponse';
-import { IPatient } from './patients.interface';
-import { PatientsService } from './patients.service';
+import { PatientService } from './patients.service';
 
-const getAllPatient = catchAsync(async (req: Request, res: Response) => {
-  const result = await PatientsService.getAllPatients();
+const createPatient = catchAsync(async (req: Request, res: Response) => {
+  const { medicalProfile, ...patientData } = req.body;
+  const result = await PatientService.createPatient(
+    patientData,
+    medicalProfile
+  );
 
-  sendResponse<IPatient[]>(res, {
+  sendResponse<Patient>(res, {
     statusCode: httpStatus.OK,
     success: true,
     message: 'Patient retrieved successfully !',
     data: result,
+  });
+});
+const getAllPatient = catchAsync(async (req: Request, res: Response) => {
+  const result = await PatientService.getAllPatients();
+
+  sendResponse<Patient[]>(res, {
+    statusCode: httpStatus.OK,
+    success: true,
+    message: 'doctor retrieved successfully !',
+    meta: result.meta,
+    data: result.data,
   });
 });
 const getSinglePatient = catchAsync(async (req: Request, res: Response) => {
   const id = req.params.id;
 
-  const result = await PatientsService.getSinglePatient(id);
+  const result = await PatientService.getSinglePatient(id);
 
-  sendResponse<IPatient>(res, {
+  sendResponse<Patient>(res, {
     statusCode: httpStatus.OK,
     success: true,
     message: 'Patient retrieved successfully !',
@@ -28,13 +43,25 @@ const getSinglePatient = catchAsync(async (req: Request, res: Response) => {
   });
 });
 
+// const getPatientProfile = catchAsync(async (req: Request, res: Response) => {
+//   const { id } = req.user as JwtPayload; // Perform a type assertion to JwtPayload
+//   const result = await PatientServices.getPatientProfile(id);
+
+//   sendResponse<Patient>(res, {
+//     statusCode: httpStatus.OK,
+//     success: true,
+//     message: 'User retrieved successfully !',
+//     data: result,
+//   });
+// });
+
 const updatePatient = catchAsync(async (req: Request, res: Response) => {
   const id = req.params.id;
   const updatedData = req.body;
 
-  const result = await PatientsService.updatePatient(id, updatedData);
+  const result = await PatientService.updatePatient(id, updatedData);
 
-  sendResponse<IPatient>(res, {
+  sendResponse<Patient>(res, {
     statusCode: httpStatus.OK,
     success: true,
     message: 'Patient updated successfully !',
@@ -43,10 +70,11 @@ const updatePatient = catchAsync(async (req: Request, res: Response) => {
 });
 
 const deletePatient = catchAsync(async (req: Request, res: Response) => {
-  const email = req.params.email;
-  const result = await PatientsService.deletePatient(email);
+  const id = req.params.id;
 
-  sendResponse<IPatient>(res, {
+  const result = await PatientService.deletePatient(id);
+
+  sendResponse<Patient>(res, {
     statusCode: httpStatus.OK,
     success: true,
     message: 'Patient deleted successfully !',
@@ -54,7 +82,8 @@ const deletePatient = catchAsync(async (req: Request, res: Response) => {
   });
 });
 
-export const PatientsController = {
+export const PatientController = {
+  createPatient,
   getAllPatient,
   getSinglePatient,
   updatePatient,

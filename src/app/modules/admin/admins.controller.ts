@@ -1,27 +1,37 @@
+import { Admin } from '@prisma/client';
 import { Request, Response } from 'express';
 import httpStatus from 'http-status';
-import { JwtPayload } from 'jsonwebtoken';
 import catchAsync from '../../../shared/catchAsync';
 import sendResponse from '../../../shared/sendResponse';
-import { IAdmin } from './admins.interface';
-import { AdminsService } from './admins.service';
+import { AdminServices } from './admins.service';
 
-const getAllAdmin = catchAsync(async (req: Request, res: Response) => {
-  const result = await AdminsService.getAllAdmins();
+const createAdmin = catchAsync(async (req: Request, res: Response) => {
+  const result = await AdminServices.createAdmin(req.body);
 
-  sendResponse<IAdmin[]>(res, {
+  sendResponse<Admin>(res, {
     statusCode: httpStatus.OK,
     success: true,
     message: 'Admin retrieved successfully !',
     data: result,
+  });
+});
+const getAllAdmin = catchAsync(async (req: Request, res: Response) => {
+  const result = await AdminServices.getAllAdmins();
+
+  sendResponse<Admin[]>(res, {
+    statusCode: httpStatus.OK,
+    success: true,
+    message: 'doctor retrieved successfully !',
+    meta: result.meta,
+    data: result.data,
   });
 });
 const getSingleAdmin = catchAsync(async (req: Request, res: Response) => {
   const id = req.params.id;
 
-  const result = await AdminsService.getSingleAdmin(id);
+  const result = await AdminServices.getSingleAdmin(id);
 
-  sendResponse<IAdmin>(res, {
+  sendResponse<Admin>(res, {
     statusCode: httpStatus.OK,
     success: true,
     message: 'Admin retrieved successfully !',
@@ -29,25 +39,25 @@ const getSingleAdmin = catchAsync(async (req: Request, res: Response) => {
   });
 });
 
-const getAdminProfile = catchAsync(async (req: Request, res: Response) => {
-  const { id } = req.user as JwtPayload; // Perform a type assertion to JwtPayload
-  const result = await AdminsService.getAdminProfile(id);
+// const getAdminProfile = catchAsync(async (req: Request, res: Response) => {
+//   const { id } = req.user as JwtPayload; // Perform a type assertion to JwtPayload
+//   const result = await AdminServices.getAdminProfile(id);
 
-  sendResponse<IAdmin>(res, {
-    statusCode: httpStatus.OK,
-    success: true,
-    message: 'User retrieved successfully !',
-    data: result,
-  });
-});
+//   sendResponse<Admin>(res, {
+//     statusCode: httpStatus.OK,
+//     success: true,
+//     message: 'User retrieved successfully !',
+//     data: result,
+//   });
+// });
 
 const updateAdmin = catchAsync(async (req: Request, res: Response) => {
   const id = req.params.id;
   const updatedData = req.body;
 
-  const result = await AdminsService.updateAdmin(id, updatedData);
+  const result = await AdminServices.updateAdmin(id, updatedData);
 
-  sendResponse<IAdmin>(res, {
+  sendResponse<Admin>(res, {
     statusCode: httpStatus.OK,
     success: true,
     message: 'Admin updated successfully !',
@@ -56,11 +66,11 @@ const updateAdmin = catchAsync(async (req: Request, res: Response) => {
 });
 
 const deleteAdmin = catchAsync(async (req: Request, res: Response) => {
-  const email = req.params.email;
+  const id = req.params.id;
 
-  const result = await AdminsService.deleteAdmin(email);
+  const result = await AdminServices.deleteAdmin(id);
 
-  sendResponse<IAdmin>(res, {
+  sendResponse<Admin>(res, {
     statusCode: httpStatus.OK,
     success: true,
     message: 'Admin deleted successfully !',
@@ -69,9 +79,9 @@ const deleteAdmin = catchAsync(async (req: Request, res: Response) => {
 });
 
 export const AdminsController = {
+  createAdmin,
   getAllAdmin,
   getSingleAdmin,
   updateAdmin,
   deleteAdmin,
-  getAdminProfile,
 };

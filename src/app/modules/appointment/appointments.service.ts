@@ -1,115 +1,273 @@
-import httpStatus from 'http-status';
-import { Types } from 'mongoose';
-import ApiError from '../../../errors/ApiErrors';
-import { User } from '../user/users.model';
-import { IAppointment } from './appointments.interface';
-import { Appointment } from './appointments.model';
+import { Appointment } from '@prisma/client';
+import prisma from '../../../shared/prisma';
 
-const bookingAppointment = async (
-  appointment: IAppointment
-): Promise<IAppointment | null> => {
-  const createdAppointment = await Appointment.create(appointment);
+const bookAppointment = async (
+  patientId: string,
+  availableServiceId: string,
+  appointmentDate: string
+): Promise<any> => {
+  //checking if the available service exist
+  const availableService = await prisma.availableService.findUnique({
+    where: {
+      id: availableServiceId,
+    },
+  });
 
-  if (!createdAppointment) {
-    throw new ApiError(400, 'failed to create Appointment !');
+  if (!availableService) {
+    throw new Error('This service is not available');
+  }
+  if (availableService.availableSeats === 0) {
+    throw new Error('This service is fully booked');
   }
 
-  const populatedAppointment = (
-    await createdAppointment.populate('doctor')
-  ).populate('patient');
+  const booking = await prisma.$transaction(async transactionClient => {
+    const appointment = await transactionClient.appointment.create({
+      data: {
+        appointmentDate,
+        patientId,
+        availableServiceId,
+        status: 'pending',
+      },
+    });
 
-  return populatedAppointment;
+    await transactionClient.availableService.update({
+      where: {
+        id: availableServiceId,
+      },
+      data: {
+        availableSeats: availableService.availableSeats - 1,
+        isBooked: availableService.availableSeats - 1 === 0 ? true : false,
+      },
+    });
+
+    const payment = await transactionClient.payment.create({
+      data: {
+        amount: availableService.fees,
+        paymentStatus: 'pending',
+        appointmentId: appointment.id,
+      },
+    });
+
+    return {
+      appointment: appointment,
+      payment: payment,
+    };
+  });
+
+  return booking;
 };
 
-const getAllAppointments = async (userId: string): Promise<IAppointment[]> => {
-  const user = await User.findById(userId);
-  if (!user) {
-    throw new ApiError(httpStatus.NOT_FOUND, 'User not found');
+const cancelAppointment = async (appointmentId: string): Promise<any> => {
+  const appointment = await prisma.appointment.findUnique({
+    where: {
+      id: appointmentId,
+    },
+  });
+
+  if (!appointment) {
+    throw new Error('Appointment does not exist');
   }
 
-  let appointments: IAppointment[];
-  if (user.role === 'admin') {
-    appointments = await Appointment.find()
-      .populate('doctor')
-      .populate('patient');
-  } else if (user.role === 'doctor') {
-    appointments = await Appointment.find({ doctor: user.doctor?._id })
-      .populate('doctor')
-      .populate('patient');
-  } else if (user.role === 'patient') {
-    if (!user.patient) {
-      throw new ApiError(httpStatus.BAD_REQUEST, 'Invalid user role');
+  if (appointment.status === 'cancelled') {
+    throw new Error('Appointment has already been cancelled');
+  }
+
+  if (appointment.status === 'finished') {
+    throw new Error('Appointment has already been completed');
+  }
+
+  const cancelledAppointment = await prisma.$transaction(
+    async transactionClient => {
+      const appointmentToCancel = await transactionClient.appointment.update({
+        where: {
+          id: appointmentId,
+        },
+        data: {
+          status: 'cancelled',
+        },
+      });
+
+      const availableService =
+        await transactionClient.availableService.findUnique({
+          where: {
+            id: appointment.availableServiceId,
+          },
+        });
+
+      await transactionClient.availableService.update({
+        where: {
+          id: appointment.availableServiceId,
+        },
+        data: {
+          availableSeats: {
+            increment: 1,
+          },
+
+          isBooked:
+            availableService && availableService.availableSeats + 1 > 0
+              ? false
+              : true,
+        },
+      });
+
+      await transactionClient.payment.update({
+        where: {
+          appointmentId,
+        },
+        data: {
+          paymentStatus: 'cancelled',
+        },
+      });
+
+      return {
+        appointment: appointmentToCancel,
+      };
     }
-    appointments = await Appointment.find({ patient: user.patient._id })
-      .populate('doctor')
-      .populate('patient');
-  } else {
-    throw new ApiError(httpStatus.BAD_REQUEST, 'Invalid user role');
+  );
+
+  return cancelledAppointment;
+};
+
+const startAppointment = async (appointmentId: string): Promise<any> => {
+  const appointment = await prisma.appointment.findUnique({
+    where: {
+      id: appointmentId,
+    },
+  });
+
+  if (!appointment) {
+    throw new Error('Appointment does not exist');
   }
 
-  if (!appointments || appointments.length === 0) {
-    throw new ApiError(400, 'No Appointments found.');
+  if (appointment.status === 'cancelled') {
+    throw new Error('Appointment has already been cancelled');
   }
 
-  return appointments;
+  if (appointment.status === 'finished') {
+    throw new Error('Appointment has already been completed');
+  }
+
+  const startedAppointment = await prisma.$transaction(
+    async transactionClient => {
+      await transactionClient.payment.update({
+        where: {
+          appointmentId,
+        },
+        data: {
+          paymentStatus: 'paid',
+          paymentDate: new Date().toISOString(),
+        },
+      });
+
+      const appointmentToStart = await transactionClient.appointment.update({
+        where: {
+          id: appointmentId,
+        },
+        data: {
+          status: 'started',
+        },
+      });
+
+      if (!appointmentToStart) {
+        await transactionClient.payment.update({
+          where: {
+            appointmentId,
+          },
+          data: {
+            paymentStatus: 'refund',
+          },
+        });
+      }
+
+      return appointmentToStart;
+    }
+  );
+
+  return startedAppointment;
+};
+
+const finishAppointment = async (appointmentId: string): Promise<any> => {
+  const appointment = await prisma.appointment.findUnique({
+    where: {
+      id: appointmentId,
+    },
+  });
+
+  if (!appointment) {
+    throw new Error('Appointment does not exist');
+  }
+
+  if (appointment.status === 'cancelled') {
+    throw new Error('Appointment has already been cancelled');
+  }
+
+  if (appointment.status === 'finished') {
+    throw new Error('Appointment has already been completed');
+  }
+
+  const appointmentToFinish = await prisma.appointment.update({
+    where: {
+      id: appointmentId,
+    },
+    data: {
+      status: 'finished',
+    },
+  });
+
+  return appointmentToFinish;
+};
+
+const getAllAppointments = async (): Promise<Appointment[] | any> => {
+  const result = await prisma.appointment.findMany();
+  const total = await prisma.appointment.count();
+  return {
+    meta: {
+      total,
+    },
+    data: result,
+  };
 };
 
 const getSingleAppointment = async (
-  appointmentId: string,
-  userId: string
-): Promise<IAppointment | null> => {
-  const user = await User.findById(userId);
-  if (!user) {
-    throw new ApiError(httpStatus.NOT_FOUND, 'User not found');
-  }
-  let appointment;
-  if (user.role === 'doctor' || user.role === 'patient') {
-    const appointmentFilter = {
-      _id: appointmentId,
-      $or: [{ doctor: user.doctor?._id }, { patient: user.patient?._id }],
-    };
-    appointment = await Appointment.findOne(appointmentFilter)
-      .populate('doctor')
-      .populate('patient');
-  } else if (user.role === 'admin') {
-    appointment = await Appointment.findById(appointmentId)
-      .populate('doctor')
-      .populate('patient');
-  }
-  if (!appointment) {
-    throw new ApiError(httpStatus.NOT_FOUND, 'Appointment not found');
-  }
-  return appointment;
+  id: string
+): Promise<Appointment | null> => {
+  const result = await prisma.appointment.findUnique({
+    where: {
+      id: id,
+    },
+  });
+  return result;
 };
 
 const updateAppointment = async (
   id: string,
-  payload: Partial<IAppointment>
-): Promise<IAppointment | null> => {
-  const isExist = await Appointment.findOne({ _id: id });
-
-  if (!isExist) {
-    throw new ApiError(httpStatus.NOT_FOUND, 'Appointment not found !');
-  }
-
-  const { ...appointmentData } = payload;
-
-  const updatedAppointmentData: Partial<IAppointment> = { ...appointmentData };
-
-  const objectId = new Types.ObjectId(id); // Convert string to ObjectId
-  const result = await Appointment.findOneAndUpdate(
-    objectId,
-    updatedAppointmentData,
-    {
-      new: true,
-    }
-  );
+  appointment: Appointment
+): Promise<Appointment> => {
+  const result = await prisma.appointment.update({
+    where: {
+      id: id,
+    },
+    data: appointment,
+  });
   return result;
 };
 
-export const AppointmentsService = {
-  bookingAppointment,
+const deleteAppointment = async (id: string): Promise<Appointment> => {
+  const result = await prisma.appointment.delete({
+    where: {
+      id: id,
+    },
+  });
+  return result;
+};
+
+export const AppointmentService = {
+  bookAppointment,
+  cancelAppointment,
+  startAppointment,
+  finishAppointment,
   getAllAppointments,
   getSingleAppointment,
   updateAppointment,
+  deleteAppointment,
 };
